@@ -1,9 +1,7 @@
 using Test
 using SymmetricLogarithmicNumbers
 
-const SLN = SymmetricLogarithmicNumbers
-
-realvalue(x::SLN.SymLogarithmic) = symexp(symlog(x))
+realvalue(x::SymLogarithmic) = symexp(symlog(x))
 
 @testset "SymmetricLogarithmicNumbers" begin
     @testset "symexp ↔ symlog" begin
@@ -24,11 +22,11 @@ realvalue(x::SLN.SymLogarithmic) = symexp(symlog(x))
         xs = [-3.5, -1.0, -0.25, 0.0, 0.25, 1.0, 3.5]
         for x in xs
             hx = SymLogarithmic(x)
-            @test hx isa SLN.SymLogarithmic{Float64}
+            @test hx isa SymLogarithmic{Float64}
             @test isapprox(realvalue(hx), x; atol=eps(x)*10, rtol=0)
         end
 
-        @test SymLogarithmic{Float32}(2.0) isa SLN.SymLogarithmic{Float32}
+        @test SymLogarithmic{Float32}(2.0) isa SymLogarithmic{Float32}
         @test isapprox(realvalue(SymLogarithmic{Float32}(2.0)), 2f0; atol=eps(Float32)*10, rtol=0)
     end
 
