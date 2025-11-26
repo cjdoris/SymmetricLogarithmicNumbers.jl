@@ -1,0 +1,3 @@
+[deps]
+SymmetricLogarithmicNumbers = "8b714bcc-5b7b-49cb-932b-e206ca82d2bc"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
