@@ -3,7 +3,7 @@
 A package for working with **huge or tiny numbers** beyond the dynamic range of
 ordinary floating point numbers.
 
-Exports the number type `SymLogarithmic{T} <: Real` which is a lot like a floating point number,
+Exports the number type `SymLog{T} <: Real` which is a lot like a floating point number,
 except it has an exponentially larger range.
 
 You can use this for calculating extremely small probabilities, which would normally
@@ -11,15 +11,15 @@ underflow a float, or extremely large quantities which would normally overflow.
 
 ## Usage
 
-To convert a number `x` to a `SymLogarithmic` number:
-- Do `convert(SymLogarithmic, x)` or `SymLogarithmic(x)`.
-- If you already know `ix = symlog(x)` then `symexp(SymLogarithmic, ix)` is faster.
-- If you already know `lx = log(x)` then `exp(SymLogarithmic, lx)` is faster.
+To convert a number `x` to a `SymLog` number:
+- Do `convert(SymLog, x)` or `SymLog(x)`.
+- If you already know `ix = symlog(x)` then `symexp(SymLog, ix)` is faster.
+- If you already know `lx = log(x)` then `exp(SymLog, lx)` is faster.
 
 The following operations are implemented and accurate:
 - **Arithmetic:** `+`, `-`, `*`, `/`, `^`, `inv`.
 - **Ordering:** `==`, `<`, `cmp`, `isequal`, `isless`, `sign`, `signbit`, `abs`.
-- **Logarithm:** `log`, `log2`, `log10`].
+- **Logarithm:** `log`, `log2`, `log10`.
 - **Conversion:** `float`, `widen`, `big`.
 - **Special values:** `zero`, `one`, `typemin`, `typemax`.
 - **Predicates:** `iszero`, `isone`, `isinf`, `isfinite`, `isnan`.
@@ -30,7 +30,7 @@ The following operations are implemented and accurate:
 ## Interoperability with other packages
 
 It is natural to use this package in conjunction with other packages which return
-logarithms. The general pattern is that you can use `exp(SymLogarithmic, logfunc(args...))`
+logarithms. The general pattern is that you can use `exp(SymLog, logfunc(args...))`
 instead of `func(args...)` to get the answer as a logarithmic number. Here are some
 possibilities for `func`:
 
@@ -53,7 +53,7 @@ This is the inverse of `symexp(x)`, which has the following nice properties:
 
 The crucial difference between `log(x)` and `symlog(x)` is that the former is only valid
 for positive numbers. This means that a logrithmic number requires an extra sign bit if you
-need to store a sign, whereas a `SymLogarithmic{T}` can be negative provided `T` can be negative.
+need to store a sign, whereas a `SymLog{T}` can be negative provided `T` can be negative.
 
 The other properties mean that many arthmetic and comparison operations are trivial to
 implement - often much simpler than with logarithmic numbers.

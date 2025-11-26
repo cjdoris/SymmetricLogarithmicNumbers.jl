@@ -1,6 +1,6 @@
 module SymmetricLogarithmicNumbers
 
-export SymLogarithmic, SymLogarithmicFloat16, SymLogarithmicFloat32, SymLogarithmicFloat64, symexp, symlog
+export SymLog, SymLogF16, SymLogF32, SymLogF64, symexp, symlog
 
 issmall(x) = abs(x) < one(x)
 
@@ -54,99 +54,99 @@ symlog(x) = copysign(invh(log(abs(x))), x)
 ### CONSTRUCTION / CONVERSION / PROMOTION
 
 """
-    SymLogarithmic{[T]}(x)
+    SymLog{[T]}(x)
 
-Convert `x` to a `SymLogarithmic` number, which is represented by `symlog(x)`.
+Convert `x` to a `SymLog` number, which is represented by `symlog(x)`.
 
-If you already know `ix = symlog(x)`, then you may call `symexp(SymLogarithmic, ix)` instead.
+If you already know `ix = symlog(x)`, then you may call `symexp(SymLog, ix)` instead.
 
-If you already know `lx = log(x)`, then you may call `exp(SymLogarithmic, ix)` instead.
+If you already know `lx = log(x)`, then you may call `exp(SymLog, ix)` instead.
 """
-struct SymLogarithmic{T<:Real} <: Real
+struct SymLog{T<:Real} <: Real
     symlog::T
-    global symexp(::Type{SymLogarithmic{T}}, x::T) where {T<:Real} = new{T}(x)
+    global symexp(::Type{SymLog{T}}, x::T) where {T<:Real} = new{T}(x)
 end
 
-const SymLogarithmicFloat16 = SymLogarithmic{Float16}
-const SymLogarithmicFloat32 = SymLogarithmic{Float32}
-const SymLogarithmicFloat64 = SymLogarithmic{Float64}
+const SymLogF16 = SymLog{Float16}
+const SymLogF32 = SymLog{Float32}
+const SymLogF64 = SymLog{Float64}
 
-decon(x::SymLogarithmic) = (ix = symlog(x); (signbit(ix), abs(ix)))
-recon(sb::Bool, ix::Real) = symexp(SymLogarithmic, ifelse(sb, -ix, +ix))
+decon(x::SymLog) = (ix = symlog(x); (signbit(ix), abs(ix)))
+recon(sb::Bool, ix::Real) = symexp(SymLog, ifelse(sb, -ix, +ix))
 
 """
-    symexp(SymLogarithmic, x)
+    symexp(SymLog, x)
 
-Compute `symexp(x)` but the result is stored exactly as a `SymLogarithmic`.
+Compute `symexp(x)` but the result is stored exactly as a `SymLog`.
 """
-symexp(::Type{SymLogarithmic{T}}, x::Real) where {T<:Real} = symexp(SymLogarithmic{T}, convert(T, x))
-symexp(::Type{SymLogarithmic}, x::T) where {T<:Real} = symexp(SymLogarithmic{T}, x)
+symexp(::Type{SymLog{T}}, x::Real) where {T<:Real} = symexp(SymLog{T}, convert(T, x))
+symexp(::Type{SymLog}, x::T) where {T<:Real} = symexp(SymLog{T}, x)
 
-symlog(x::SymLogarithmic) = x.symlog
-symexp(x::SymLogarithmic) = symexp(SymLogarithmic, symexp(symlog(x)))
+symlog(x::SymLog) = x.symlog
+symexp(x::SymLog) = symexp(SymLog, symexp(symlog(x)))
 
-Base.convert(::Type{SymLogarithmic{T}}, x::SymLogarithmic{T}) where {T} = x
-Base.convert(::Type{SymLogarithmic{T}}, x::Real) where {T} = symexp(SymLogarithmic{T}, symlog(x))
+Base.convert(::Type{SymLog{T}}, x::SymLog{T}) where {T} = x
+Base.convert(::Type{SymLog{T}}, x::Real) where {T} = symexp(SymLog{T}, symlog(x))
 
-Base.convert(::Type{SymLogarithmic}, x::SymLogarithmic) = x
-Base.convert(::Type{SymLogarithmic}, x::Real) = symexp(SymLogarithmic, symlog(x))
+Base.convert(::Type{SymLog}, x::SymLog) = x
+Base.convert(::Type{SymLog}, x::Real) = symexp(SymLog, symlog(x))
 
-SymLogarithmic(x::Real) = convert(SymLogarithmic, x)
+SymLog(x::Real) = convert(SymLog, x)
 
-SymLogarithmic{T}(x::Real) where {T} = convert(SymLogarithmic{T}, x)
+SymLog{T}(x::Real) where {T} = convert(SymLog{T}, x)
 
-Base.AbstractFloat(x::SymLogarithmic) = AbstractFloat(symexp(AbstractFloat(symlog(x))))
+Base.AbstractFloat(x::SymLog) = AbstractFloat(symexp(AbstractFloat(symlog(x))))
 
-Base.BigFloat(x::SymLogarithmic) = BigFloat(symexp(BigFloat(symlog(x))))
+Base.BigFloat(x::SymLog) = BigFloat(symexp(BigFloat(symlog(x))))
 
-Base.promote_rule(::Type{SymLogarithmic{T}}, ::Type{SymLogarithmic{S}}) where {T<:Real, S<:Real} = SymLogarithmic{promote_type(T, S)}
-Base.promote_rule(::Type{SymLogarithmic{T}}, ::Type{S}) where {T<:Real, S<:Real} = promote_type(SymLogarithmic{T}, typeof(SymLogarithmic(zero(S))))
+Base.promote_rule(::Type{SymLog{T}}, ::Type{SymLog{S}}) where {T<:Real, S<:Real} = SymLog{promote_type(T, S)}
+Base.promote_rule(::Type{SymLog{T}}, ::Type{S}) where {T<:Real, S<:Real} = promote_type(SymLog{T}, typeof(SymLog(zero(S))))
 
 
 ### COMPARISONS / PREDICATES
 
 for op in [:signbit, :isfinite, :isinf, :isnan, :iszero, :isone]
-    @eval Base.$op(x::SymLogarithmic) = $op(symlog(x))
+    @eval Base.$op(x::SymLog) = $op(symlog(x))
 end
 
 for op in [:isequal, :isless, :cmp, :(==), :(!=), :(<), :(<=), :(>), :(>=)]
-    @eval Base.$op(x::SymLogarithmic, y::SymLogarithmic) = $op(symlog(x), symlog(y))
+    @eval Base.$op(x::SymLog, y::SymLog) = $op(symlog(x), symlog(y))
 end
 
 for op in [:sign, :abs, :(+), :(-), :inv, :nextfloat, :prevfloat]
-    @eval Base.$op(x::SymLogarithmic) = symexp(SymLogarithmic, $op(symlog(x)))
+    @eval Base.$op(x::SymLog) = symexp(SymLog, $op(symlog(x)))
 end
 
 for op in [:zero, :one, :typemin, :typemax]
-    @eval Base.$op(::Type{SymLogarithmic{T}}) where {T} = symexp(SymLogarithmic, $op(T))
+    @eval Base.$op(::Type{SymLog{T}}) where {T} = symexp(SymLog, $op(T))
 end
 
 for op in [:nextfloat, :prevfloat]
-    @eval Base.$op(x::SymLogarithmic, n::Integer) = symexp(SymLogarithmic, $op(symlog(x), n))
+    @eval Base.$op(x::SymLog, n::Integer) = symexp(SymLog, $op(symlog(x), n))
 end
 
-Base.zero(::Type{SymLogarithmic}) = zero(SymLogarithmic{Int})
+Base.zero(::Type{SymLog}) = zero(SymLog{Int})
 
-Base.one(::Type{SymLogarithmic}) = one(SymLogarithmic{Int})
+Base.one(::Type{SymLog}) = one(SymLog{Int})
 
-# We hash the inner value, which for free means that hash(SymLogarithmic(x)) == hash(x) for x in
+# We hash the inner value, which for free means that hash(SymLog(x)) == hash(x) for x in
 # [-Inf, -1, 0, 1, Inf], which are also the only values likely to overlap with other types.
-Base.hash(x::SymLogarithmic, h::UInt) = hash(symlog(x), h)
+Base.hash(x::SymLog, h::UInt) = hash(symlog(x), h)
 
 
 ### TYPES
 
-Base.big(::Type{SymLogarithmic}) = SymLogarithmic{BigFloat}
-Base.big(::Type{SymLogarithmic{T}}) where {T} = SymLogarithmic{big(T)}
-Base.big(x::SymLogarithmic) = convert(big(typeof(x)), x)
+Base.big(::Type{SymLog}) = SymLog{BigFloat}
+Base.big(::Type{SymLog{T}}) where {T} = SymLog{big(T)}
+Base.big(x::SymLog) = convert(big(typeof(x)), x)
 
-Base.widen(::Type{SymLogarithmic{T}}) where {T} = SymLogarithmic{widen(T)}
-Base.widen(x::SymLogarithmic) = convert(widen(typeof(x)), x)
+Base.widen(::Type{SymLog{T}}) where {T} = SymLog{widen(T)}
+Base.widen(x::SymLog) = convert(widen(typeof(x)), x)
 
 
 ### ARITHMETIC
 
-function Base.:(*)(x::SymLogarithmic{T}, y::SymLogarithmic{T}) where {T}
+function Base.:(*)(x::SymLog{T}, y::SymLog{T}) where {T}
     sx, ix = decon(x)
     sy, iy = decon(y)
     sr = xor(sx, sy)
@@ -154,7 +154,7 @@ function Base.:(*)(x::SymLogarithmic{T}, y::SymLogarithmic{T}) where {T}
     return recon(sr, ir)
 end
 
-function Base.:(/)(x::SymLogarithmic{T}, y::SymLogarithmic{T}) where {T}
+function Base.:(/)(x::SymLog{T}, y::SymLog{T}) where {T}
     sx, ix = decon(x)
     sy, iy = decon(y)
     sr = xor(sx, sy)
@@ -162,13 +162,13 @@ function Base.:(/)(x::SymLogarithmic{T}, y::SymLogarithmic{T}) where {T}
     return recon(sr, ir)
 end
 
-function Base.:(^)(x::SymLogarithmic, p::Real) where {T}
+function Base.:(^)(x::SymLog, p::Real) where {T}
     sx, ix = decon(x)
     if sx && !iszero(ix) && !isnan(ix)
         if isinteger(p)
             sr = isodd(p)
         else
-            throw(DomainError(x, "Can only take integer powers of negative SymLogarithmic numbers."))
+            throw(DomainError(x, "Can only take integer powers of negative SymLog numbers."))
         end
     else
         sr = false
@@ -177,14 +177,14 @@ function Base.:(^)(x::SymLogarithmic, p::Real) where {T}
     return recon(sr, ir)
 end
 
-function Base.:(^)(x::SymLogarithmic, p::Integer) where {T}
+function Base.:(^)(x::SymLog, p::Integer) where {T}
     sx, ix = decon(x)
     sr = sx && isodd(p)
     ir = invh(h(ix) * p)
     return recon(sr, ir)    
 end
 
-Base.:(+)(x::SymLogarithmic{T}, y::SymLogarithmic{T}) where {T} = _add(decon(x)..., decon(y)...)
+Base.:(+)(x::SymLog{T}, y::SymLog{T}) where {T} = _add(decon(x)..., decon(y)...)
 
 function _add(sx, ix, sy, iy)
     se = xor(sx, sy)
@@ -206,11 +206,11 @@ function _add(sx, ix, sy, iy)
     return recon(sr, ir)    
 end
 
-Base.:(-)(x::SymLogarithmic{T}, y::SymLogarithmic{T}) where {T} = _sub(decon(x)..., decon(y)...)
+Base.:(-)(x::SymLog{T}, y::SymLog{T}) where {T} = _sub(decon(x)..., decon(y)...)
 
 _sub(sx, ix, sy, iy) = _add(sx, ix, !sy, iy)
 
-function Base.log(x::SymLogarithmic)
+function Base.log(x::SymLog)
     ix = symlog(x)
     if signbit(ix) && !iszero(ix) && !isnan(ix)
         throw(DomainError(x))
@@ -221,42 +221,42 @@ function Base.log(x::SymLogarithmic)
     end
 end
 
-function Base.log2(x::SymLogarithmic)
+function Base.log2(x::SymLog)
     logx = log(x)
     return logx / log(oftype(logx, 2))
 end
 
-function Base.log10(x::SymLogarithmic)
+function Base.log10(x::SymLog)
     logx = log(x)
     return logx / log(oftype(logx, 10))
 end
 
-function Base.exp(x::SymLogarithmic)
-    return symexp(SymLogarithmic, invh(symexp(symlog(x))))
+function Base.exp(x::SymLog)
+    return symexp(SymLog, invh(symexp(symlog(x))))
 end
 
-function Base.exp(::Type{SymLogarithmic}, x::Real)
+function Base.exp(::Type{SymLog}, x::Real)
     if signbit(x)
         ir = inv(one(x) - x)
     else
         ir = x + inv(inv(one(x)))
     end
-    return symexp(SymLogarithmic, ir)
+    return symexp(SymLog, ir)
 end
 
-function Base.exp(::Type{SymLogarithmic{T}}, x::Real) where {T}
+function Base.exp(::Type{SymLog{T}}, x::Real) where {T}
     if signbit(x)
         ir = inv(one(T) - convert(T, x))
     else
         ir = convert(T, x) + one(T)
     end
-    return symexp(SymLogarithmic{T}, ir)
+    return symexp(SymLog{T}, ir)
 end
 
 
 ## IO
 
-function Base.show(io::IO, x::SymLogarithmic)
+function Base.show(io::IO, x::SymLog)
     print(io, "symexp(")
     if get(io, :typeinfo, Any) != typeof(x)
         show(io, typeof(x))
@@ -266,12 +266,12 @@ function Base.show(io::IO, x::SymLogarithmic)
     print(io, ")")
 end
 
-function Base.write(io::IO, x::SymLogarithmic)
+function Base.write(io::IO, x::SymLog)
     write(io, symlog(x))
 end
 
-function Base.read(io::IO, ::Type{SymLogarithmic{T}}) where {T}
-    symexp(SymLogarithmic{T}, read(io, T))
+function Base.read(io::IO, ::Type{SymLog{T}}) where {T}
+    symexp(SymLog{T}, read(io, T))
 end
 
 end # module
